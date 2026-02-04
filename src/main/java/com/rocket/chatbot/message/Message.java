@@ -1,10 +1,12 @@
-package com.rocket.chatbot;
+package com.rocket.chatbot.message;
 
+import com.rocket.chatbot.conversation.Conversation;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -13,9 +15,10 @@ public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(columnDefinition = "TEXT")
     private String role;
-    private Timestamp created_at;
-    private Timestamp updated_at;
+    @CreationTimestamp
+    private LocalDateTime created_at;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conversation_id")
     private Conversation conversation;
