@@ -1,21 +1,27 @@
-package com.rocket.chatbot;
+package com.rocket.chatbot.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String role;
-    private Timestamp created_at;
-    private Timestamp updated_at;
+    @Column(columnDefinition = "TEXT")
+    private String content;
+    @CreationTimestamp
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conversation_id")
     private Conversation conversation;
