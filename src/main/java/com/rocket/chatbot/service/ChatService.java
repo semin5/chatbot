@@ -11,8 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.hibernate.Hibernate;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -62,11 +63,22 @@ public class ChatService {
     }
 
     public List<ConversationDto> getAllConversations(){
-        return conversationRepository.findAllConversations();
+        return conversationRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Conversation::getCreatedAt).reversed())
+                .map(ConversationDto::from)
+                .toList();
     }
 
     public List<MessageDto> getMessagesByConversationId(Long id){
-        return messageRepository.findMessagesByConversationId(id);
+
+        List<Message> messages = messageRepository.findMessagesByConversationId(id);
+
+        for (Message m : messages) {
+            Hibernate.initialize(m.getConversation());
+        }
+
+        return messages.stream().map(MessageDto::from).toList();
     }
 
     public void deleteConversation(Long id){

@@ -10,6 +10,6 @@ import java.util.List;
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
     List<Message> findTop10ByConversationIdOrderByCreatedAtDesc(Long id);
-    List<MessageDto> findMessagesByConversationId(Long id);
+    List<Message> findMessagesByConversationId(Long id);
 
 }
