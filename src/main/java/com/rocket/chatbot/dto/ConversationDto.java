@@ -16,7 +16,6 @@ public class ConversationDto {
     private String title;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private User user;
 
     public static ConversationDto from(Conversation c) {
         return ConversationDto.builder()
@@ -24,7 +23,6 @@ public class ConversationDto {
                 .title(c.getTitle())
                 .createdAt(c.getCreatedAt())
                 .updatedAt(c.getUpdatedAt())
-                .user(c.getUser())
                 .build();
     }
 }
