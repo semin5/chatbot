@@ -8,7 +8,6 @@ import com.rocket.chatbot.repository.ConversationRepository;
 import com.rocket.chatbot.domain.Message;
 import com.rocket.chatbot.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.hibernate.Hibernate;
