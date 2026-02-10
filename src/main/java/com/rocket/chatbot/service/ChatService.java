@@ -10,7 +10,7 @@ import com.rocket.chatbot.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.hibernate.Hibernate;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -69,15 +69,14 @@ public class ChatService {
                 .toList();
     }
 
-    public List<MessageDto> getMessagesByConversationId(Long id){
+    public List<ConversationDto> getMessagesByConversationId(Long id){
+
+        Conversation c = conversationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
 
         List<Message> messages = messageRepository.findMessagesByConversationId(id);
 
-        for (Message m : messages) {
-            Hibernate.initialize(m.getConversation());
-        }
-
-        return messages.stream().map(MessageDto::from).toList();
+        return Collections.singletonList(ConversationDto.detail(c, messages));
     }
 
     public void deleteConversation(Long id){

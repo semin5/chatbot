@@ -77,6 +77,7 @@ public class OpenAIService {
         }
 
         Map firstChoice = (Map) choices.get(0);
+
         Map message = (Map) firstChoice.get("message");
         if (message == null) {
             throw new IllegalStateException("OpenAI message is missing");

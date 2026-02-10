@@ -40,8 +40,8 @@ public class ChatController {
     }
 
     @GetMapping("/conversations/{id}/messages")
-    public ResponseEntity<ChatResponse<List<MessageDto>>> getMessages(@PathVariable Long id) {
-        List<MessageDto> messages = chatService.getMessagesByConversationId(id);
+    public ResponseEntity<ChatResponse<List<ConversationDto>>> getMessages(@PathVariable Long id) {
+        List<ConversationDto> messages = chatService.getMessagesByConversationId(id);
         return ResponseEntity.ok(ChatResponse.success(messages));
     }
 
