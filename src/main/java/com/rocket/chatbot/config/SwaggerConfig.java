@@ -25,6 +25,4 @@ public class SwaggerConfig {
                                 .in(SecurityScheme.In.HEADER)
                                 .name("X-API-Key")));
     }
-
-
 }
