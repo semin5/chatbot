@@ -43,9 +43,9 @@ public class OpenAIService {
                 });
     }
 
-    public String chat(List<Message> contextMessages){
+    public String chat(List<Message> message){
 
-        List<Map<String, String>> messages = contextMessages.stream()
+        List<Map<String, String>> messages = message.stream()
                 .filter(m -> m.getRole() != null && m.getContent() != null)
                 .map(m -> Map.of(
                         "role", m.getRole(),
@@ -78,12 +78,12 @@ public class OpenAIService {
 
         Map firstChoice = (Map) choices.get(0);
 
-        Map message = (Map) firstChoice.get("message");
-        if (message == null) {
+        Map mes = (Map) firstChoice.get("message");
+        if (mes == null) {
             throw new IllegalStateException("OpenAI message is missing");
         }
 
-        Object content = message.get("content");
+        Object content = mes.get("content");
         if (content == null) {
             throw new IllegalStateException("OpenAI content is null");
         }
