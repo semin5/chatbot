@@ -1,22 +1,19 @@
 package com.rocket.chatbot.dto;
 
-import com.rocket.chatbot.domain.Conversation;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.rocket.chatbot.domain.Message;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@AllArgsConstructor
 public class MessageDto {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long messageId;
     private String role;
     private String content;
-
-    public MessageDto(Long id, String role, String content) {
-        this.messageId = id;
-        this.role = role;
-        this.content = content;
-    }
 
     public MessageDto(String role, String content) {
         this.role = role;
