@@ -22,7 +22,19 @@ public class GlobalExceptionHandler {
         return status != null ? status : HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
-    // 400 검증 실패
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiResponse> handleBusiness(BusinessException e){
+
+        ErrorCode c = e.getErrorCode();
+
+        return ResponseEntity
+                .status(c.getStatus())
+                .body(ApiResponse.error(
+                        c.getStatus(),
+                        e.getMessage(),
+                        e.getData()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException e){
 
@@ -42,31 +54,7 @@ public class GlobalExceptionHandler {
                         "잘못된 요청"));
     }
 
-    // 400 잘못된 인수
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse> handleIllegalArgument(IllegalArgumentException e){
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(
-                        HttpStatus.BAD_REQUEST,
-                        e.getMessage(),
-                        "데이터 없음"));
-    }
-
-    // 404 못찾음
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<ApiResponse> handleNotFound(NoSuchElementException e) {
-
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.error(
-                        HttpStatus.NOT_FOUND,
-                        e.getMessage(),
-                        "찾을 수 없음"));
-    }
-
-    // 429 상태 코드
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ApiResponse> handleResponseStatus(ResponseStatusException e){
 
@@ -81,7 +69,6 @@ public class GlobalExceptionHandler {
                         "요청 처리 중 오류"));
     }
 
-    // 429 외부 API 오류
     @ExceptionHandler(WebClientResponseException.class)
     public ResponseEntity<ApiResponse> handleWebClient(WebClientResponseException e){
 
@@ -95,19 +82,6 @@ public class GlobalExceptionHandler {
                         "외부 API 오류"));
     }
 
-    // 서버 내부 500
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse> handleRuntimeException(RuntimeException e) {
-
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error(
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                        e.getMessage(),
-                        "서버 내부 오류 발생"));
-    }
-
-    // 기타 500
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse> handleException(Exception e) {
 

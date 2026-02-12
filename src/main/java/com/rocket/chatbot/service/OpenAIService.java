@@ -1,10 +1,13 @@
 package com.rocket.chatbot.service;
 
 import com.rocket.chatbot.domain.Message;
+import com.rocket.chatbot.exception.BusinessException;
+import com.rocket.chatbot.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
@@ -59,33 +62,78 @@ public class OpenAIService {
                 "stream", false
         );
 
-        Map response = webClient.post()
-                .uri("https://api.openai.com/v1/chat/completions")
-                .header("Authorization", "Bearer " + apiKey)
-                .bodyValue(body)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
+        final Map response;
+        try{
+            response = webClient.post()
+                    .uri("https://api.openai.com/v1/chat/completions")
+                    .header("Authorization", "Bearer " + apiKey)
+                    .bodyValue(body)
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
+        } catch (WebClientResponseException e){
+
+            int code = e.getStatusCode().value();
+
+            if (code == 429) {
+                throw new BusinessException(
+                        ErrorCode.RATE_LIMITED,
+                        "OpenAI 요청이 너무 많습니다.",
+                        "rate_limited"
+                );
+            }
+
+            throw new BusinessException(
+                    ErrorCode.EXTERNAL_API_ERROR,
+                    "OpenAI 호출 실패",
+                    "external_api_error"
+            );
+
+        } catch (Exception e){
+
+            throw new BusinessException(
+                    ErrorCode.EXTERNAL_API_ERROR,
+                    "OpenAI 통신 오류",
+                    "external api error"
+            );
+        }
+
 
         if (response == null) {
-            throw new IllegalStateException("OpenAI response is null");
+            throw new BusinessException(
+                    ErrorCode.EXTERNAL_API_ERROR,
+                    "OpenAI 응답이 비어있음",
+                    "external api error"
+            );
         }
 
         List choices = (List) response.get("choices");
         if (choices == null || choices.isEmpty()) {
-            throw new IllegalStateException("OpenAI choices is empty");
+            throw new BusinessException(
+                    ErrorCode.EXTERNAL_API_ERROR,
+                    "OpenAI 응답 형식이 올바르지 않음. choices 없음",
+                    "external api error"
+            );
         }
 
         Map firstChoice = (Map) choices.get(0);
 
         Map mes = (Map) firstChoice.get("message");
         if (mes == null) {
-            throw new IllegalStateException("OpenAI message is missing");
+            throw new BusinessException(
+                    ErrorCode.EXTERNAL_API_ERROR,
+                    "OpenAI 응답 형식이 올바르지 않음. message 없음",
+                    "external api error"
+            );
         }
 
         Object content = mes.get("content");
         if (content == null) {
-            throw new IllegalStateException("OpenAI content is null");
+            throw new BusinessException(
+                    ErrorCode.EXTERNAL_API_ERROR,
+                    "OpenAI 응답 형식이 올바르지 않음. content 없음",
+                    "external api error"
+            );
         }
 
         return content.toString();
