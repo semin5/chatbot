@@ -8,8 +8,10 @@ import com.rocket.chatbot.repository.ConversationRepository;
 import com.rocket.chatbot.domain.Message;
 import com.rocket.chatbot.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,7 +31,7 @@ public class ChatService {
         Conversation conversation;
         if (request.getConversationId() != null) {
             conversation = conversationRepository.findById(request.getConversationId())
-                    .orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversation not found"));
         } else {
             conversation = new Conversation();
             conversation.setTitle(request.getMessage().substring(0, Math.min(50, request.getMessage().length())));
@@ -72,7 +74,7 @@ public class ChatService {
     public List<ConversationDto> getMessagesByConversationId(Long id){
 
         Conversation c = conversationRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversation not found"));
 
         List<Message> messages = messageRepository.findMessagesByConversationId(id);
 

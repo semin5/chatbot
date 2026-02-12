@@ -2,6 +2,7 @@ package com.rocket.chatbot.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
+import org.springframework.http.HttpStatus;
 
 @Getter
 @Builder
@@ -30,10 +31,11 @@ public class ApiResponse<T> {
                 .build();
     }
 
-    public static <T> ApiResponse<T> error(int status, String message) {
+    public static <T> ApiResponse<T> error(HttpStatus status, String message, T data) {
         return ApiResponse.<T>builder()
-                .status(status)
+                .status(status.value())
                 .message(message)
+                .data(data)
                 .build();
     }
 }
