@@ -11,9 +11,9 @@ public enum ErrorCode {
     // 400
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청"),
     INVALID_ARGUMENT(HttpStatus.BAD_REQUEST, "잘못된 인수"),
-
+    INVALID_INPUT(HttpStatus.BAD_REQUEST, "잘못된 입력"),
     // 404
-    NOT_FOUND(HttpStatus.NOT_FOUND, "찾을 수 없슴"),
+    NOT_FOUND(HttpStatus.NOT_FOUND, "찾을 수 없음"),
 
     // 429
     RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "요청 너무 많음"),

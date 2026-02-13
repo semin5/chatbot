@@ -31,4 +31,9 @@ public class Conversation {
     private User user;
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL)
     private List<Message> messages = new ArrayList<>();
+
+    public Conversation(User user, String title) {
+        this.user = user;
+        this.title = title;
+    }
 }

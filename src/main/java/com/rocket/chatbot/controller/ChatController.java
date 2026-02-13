@@ -7,9 +7,12 @@ import com.rocket.chatbot.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import com.rocket.chatbot.config.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -49,6 +52,15 @@ public class ChatController {
         chatService.deleteConversation(id);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @Operation(summary = "채팅 메시지 전송", description = "사용자 메시지를 전송하고 AI 응답을 SSE(Server-Sent Events)로 스트리밍합니다.")
+    @PostMapping(value = "/chat/completions/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamChat(
+            @Valid @RequestBody ChatRequest request) {
+
+        return chatService.createChatCompletionStream(request);
+    }
+
 
 
 }

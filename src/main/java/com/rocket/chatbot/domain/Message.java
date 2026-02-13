@@ -26,4 +26,15 @@ public class Message {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conversation_id")
     private Conversation conversation;
+
+    public Message(String role, String content, Conversation conversation) {
+        this.role = role;
+        this.content = content;
+        this.conversation = conversation;
+    }
+
+    public Message(String role, String content){
+        this.role = role;
+        this.content = content;
+    }
 }

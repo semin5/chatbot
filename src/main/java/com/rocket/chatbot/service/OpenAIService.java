@@ -1,10 +1,13 @@
 package com.rocket.chatbot.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rocket.chatbot.config.WebClientConfig;
 import com.rocket.chatbot.domain.Message;
+import com.rocket.chatbot.dto.*;
 import com.rocket.chatbot.exception.BusinessException;
 import com.rocket.chatbot.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -12,27 +15,20 @@ import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class OpenAIService {
 
+    private final WebClientConfig webClientConfig;
     private final WebClient webClient;
-    private final String apiKey;
-
-    public OpenAIService(
-            WebClient webClient,
-            @Value("${openai.api-key}") String apiKey
-    ) {
-        this.webClient = webClient;
-        this.apiKey = apiKey;
-    }
+    private final ObjectMapper objectMapper;
 
     public Flux<String> chatStream(String message, Long conversationId) {
 
         return webClient.post()
                 .uri("https://api.openai.com/v1/chat/completions")
-                .header("Authorization", "Bearer " + apiKey)
                 .bodyValue(Map.of(
                         "model", "gpt-3.5-turbo",
                         "messages", List.of(Map.of("role", "user", "content", message)),
@@ -48,96 +44,90 @@ public class OpenAIService {
 
     public String chat(List<Message> message){
 
-        List<Map<String, String>> messages = message.stream()
-                .filter(m -> m.getRole() != null && m.getContent() != null)
-                .map(m -> Map.of(
-                        "role", m.getRole(),
-                        "content", m.getContent()
-                ))
-                .collect(Collectors.toList());
-
-        Map<String, Object> body = Map.of(
-                "model", "gpt-3.5-turbo",
-                "messages", messages,
-                "stream", false
-        );
-
-        final Map response;
         try{
-            response = webClient.post()
-                    .uri("https://api.openai.com/v1/chat/completions")
-                    .header("Authorization", "Bearer " + apiKey)
+            List<Message> openAiMessages = message.stream()
+                    .filter(m -> m.getRole() != null && m.getContent() != null)
+                    .map(m -> new Message(m.getRole(), m.getContent()))
+                    .toList();
+
+            Chatbody body = Chatbody.builder()
+                    .model(webClientConfig.getModel())
+                    .messages(openAiMessages)
+                    .stream(false)
+                    .build();
+
+            ChatResponse response = webClient.post()
+                    .uri("/v1/chat/completions")
                     .bodyValue(body)
                     .retrieve()
-                    .bodyToMono(Map.class)
+                    .bodyToMono(ChatResponse.class)
                     .block();
+
+            ExResponse(response);
+            return response.getChoices().get(0).getMessage().getContent();
+
         } catch (WebClientResponseException e){
-
-            int code = e.getStatusCode().value();
-
-            if (code == 429) {
-                throw new BusinessException(
-                        ErrorCode.RATE_LIMITED,
-                        "OpenAI 요청이 너무 많습니다.",
-                        "rate_limited"
-                );
+            if (e.getStatusCode().value() == 429) {
+                throw new BusinessException(ErrorCode.RATE_LIMITED, "OpenAI 요청이 너무 많습니다.", "rate_limited");
             }
-
-            throw new BusinessException(
-                    ErrorCode.EXTERNAL_API_ERROR,
-                    "OpenAI 호출 실패",
-                    "external_api_error"
-            );
+            log.error("OpenAI error: status={}, body={}", e.getRawStatusCode(), e.getResponseBodyAsString(), e);
+            throw new BusinessException(ErrorCode.EXTERNAL_API_ERROR, "OpenAI 호출 실패", "external api error");
 
         } catch (Exception e){
-
-            throw new BusinessException(
-                    ErrorCode.EXTERNAL_API_ERROR,
-                    "OpenAI 통신 오류",
-                    "external api error"
-            );
+            throw new BusinessException(ErrorCode.EXTERNAL_API_ERROR, "OpenAI 통신 오류", "external api error");
         }
-
-
-        if (response == null) {
-            throw new BusinessException(
-                    ErrorCode.EXTERNAL_API_ERROR,
-                    "OpenAI 응답이 비어있음",
-                    "external api error"
-            );
-        }
-
-        List choices = (List) response.get("choices");
-        if (choices == null || choices.isEmpty()) {
-            throw new BusinessException(
-                    ErrorCode.EXTERNAL_API_ERROR,
-                    "OpenAI 응답 형식이 올바르지 않음. choices 없음",
-                    "external api error"
-            );
-        }
-
-        Map firstChoice = (Map) choices.get(0);
-
-        Map mes = (Map) firstChoice.get("message");
-        if (mes == null) {
-            throw new BusinessException(
-                    ErrorCode.EXTERNAL_API_ERROR,
-                    "OpenAI 응답 형식이 올바르지 않음. message 없음",
-                    "external api error"
-            );
-        }
-
-        Object content = mes.get("content");
-        if (content == null) {
-            throw new BusinessException(
-                    ErrorCode.EXTERNAL_API_ERROR,
-                    "OpenAI 응답 형식이 올바르지 않음. content 없음",
-                    "external api error"
-            );
-        }
-
-        return content.toString();
     }
 
+    private void ExResponse(ChatResponse response) {
+        if (response == null || response.getChoices() == null || response.getChoices().isEmpty()) {
+            throw new BusinessException(ErrorCode.EXTERNAL_API_ERROR, "OpenAI API 응답이 비어있음", "external api error");
+        }
 
+        ChatResponse.Choice choice = response.getChoices().get(0);
+        if (choice.getMessage() == null || choice.getMessage().getContent() == null) {
+            throw new BusinessException(ErrorCode.EXTERNAL_API_ERROR, "OpenAI API 응답 형식이 올바르지 않음", "external api error");
+        }
+    }
+
+    public Flux<String> ChatStream(List<OpenAIMessage> message) {
+
+        List<OpenAIMessage> openAiMessages = message.stream()
+                .filter(m -> m.getRole() != null && m.getContent() != null)
+                .map(m -> new OpenAIMessage(m.getRole(), m.getContent()))
+                .toList();
+
+        ChatDto body = ChatDto.builder()
+                .model(webClientConfig.getModel())
+                .messages(openAiMessages)
+                .stream(true)
+                .build();
+
+        return webClient.post()
+                .uri("/v1/chat/completions")
+                .bodyValue(body)
+                .retrieve()
+                .bodyToFlux(String.class)
+                .flatMap(responseBody -> Flux.fromArray(responseBody.split("\n"))) // 줄 단위 분할
+                .map(line -> {
+                    if (line.startsWith("data:")) {
+                        return line.substring(5).trim();
+                    }
+                    return line.trim();
+                })
+                .filter(data -> !data.isEmpty() && !"[DONE]".equals(data)) // [DONE] 및 빈 줄 필터링
+                .map(data -> {
+                    try {
+                        ChatChunkResponse chunk =
+                                objectMapper.readValue(data, ChatChunkResponse.class);
+                        if (chunk.getChoices() != null && !chunk.getChoices().isEmpty()) {
+                            String content = chunk.getChoices().get(0).getDelta().getContent();
+                            return content != null ? content : "";
+                        }
+                        return "";
+                    } catch (Exception e) {
+                        throw new RuntimeException(e.getMessage());
+                    }
+                })
+                .filter(content -> !content.isEmpty());
+    }
 }
