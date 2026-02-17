@@ -14,6 +14,7 @@ import com.rocket.chatbot.exception.ErrorCode;
 import com.rocket.chatbot.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -35,6 +37,8 @@ public class ChatService {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final OpenAIService openAIService;
+    private final StringRedisTemplate redis;
+    private static final Duration LAST_CONV_TTL = Duration.ofHours(6);
 
     @Transactional
     public MessageDto processChat(ChatRequest request) {
@@ -99,9 +103,17 @@ public class ChatService {
     @Transactional
     public SseEmitter createChatCompletionStream(ChatRequest request/*, Long userId*/) {
         SseEmitter emitter = new SseEmitter(60000L);
-        Long conversationId = parseConversationId(request.getConversationId());
 
-        Conversation conversation = getOrCreateConversation(conversationId, 1L, request.getMessage());
+        Long userId = 1L;
+        Long conversationId = resolveConversationId(request.getConversationId(), userId);
+
+        Conversation conversation = getOrCreateConversation(conversationId, userId, request.getMessage());
+
+        redis.opsForValue().set(
+                lastConvKey(userId),
+                String.valueOf(conversation.getId()),
+                LAST_CONV_TTL
+        );
 
         try {
             emitter.send(SseEmitter.event()
@@ -151,14 +163,18 @@ public class ChatService {
         return emitter;
     }
 
-    private Long parseConversationId(Long id) {
-        if (id == null || id.describeConstable().isEmpty()) {
+    private Long resolveConversationId(Long id, Long userId) {
+
+        if(id != null) return id;
+
+        String cached = redis.opsForValue().get(lastConvKey(userId));
+
+        if (cached == null || cached.isBlank()) return null;
+        try{
+            return Long.parseLong(cached);
+        } catch (BusinessException e){
+            redis.delete(lastConvKey(userId));
             return null;
-        }
-        try {
-            return Long.parseLong(String.valueOf(id));
-        } catch (NumberFormatException e) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT, "잘못된 입력");
         }
     }
 
@@ -186,5 +202,9 @@ public class ChatService {
             openAIMessages.add(new OpenAIMessage(message.getRole(), message.getContent()));
         }
         return openAIMessages;
+    }
+
+    private String lastConvKey(Long userId) {
+        return "chat:lastConversation:" + userId;
     }
 }
