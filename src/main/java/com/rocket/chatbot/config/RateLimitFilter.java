@@ -1,7 +1,5 @@
 package com.rocket.chatbot.config;
 
-import com.rocket.chatbot.exception.BusinessException;
-import com.rocket.chatbot.exception.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +17,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -38,8 +35,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-
-        log.info("RateLimit filter hit: {}", request.getRequestURI());
 
         String path = request.getRequestURI();
         String apiKey = request.getHeader("X-API-Key");

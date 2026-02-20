@@ -1,19 +1,16 @@
 package com.rocket.chatbot.exception;
 
 import com.rocket.chatbot.config.ApiResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.NoSuchElementException;
-
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
