@@ -16,7 +16,7 @@ public enum ErrorCode {
     NOT_FOUND(HttpStatus.NOT_FOUND, "찾을 수 없음"),
 
     // 429
-    RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "요청 너무 많음"),
+    RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "요청 횟수 제한 초과"),
 
     // 502
     EXTERNAL_API_ERROR(HttpStatus.BAD_GATEWAY, "외부 API 호출 실패"),
