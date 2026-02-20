@@ -1,6 +1,7 @@
 package com.rocket.chatbot.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.context.annotation.Configuration;
@@ -23,17 +24,17 @@ public class SecurityConfig {
     private final RateLimitFilter rateLimitFilter;
     private final LoggingFilter loggingFilter;
 
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/health", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/error").permitAll()
-                        .requestMatchers("/api/**").permitAll()
+                .authorizeHttpRequests(a -> a
+                        .requestMatchers("/api/health", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api/**").permitAll() //.authenticated()
                         .anyRequest().authenticated()
                 )
-
                 .addFilterBefore(loggingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(apiKeyAuthFilter, LoggingFilter.class)
                 .addFilterAfter(rateLimitFilter, ApiKeyAuthFilter.class);
@@ -41,6 +42,7 @@ public class SecurityConfig {
         return http.build();
     }
 
+    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("*"));
