@@ -35,25 +35,33 @@ public class ChatController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @Operation(summary = "전체 채팅 조회", description = "전체 채팅을 조회합니다.")
     @GetMapping("/conversations")
     public ResponseEntity<ApiResponse<List<ConversationDto>>> getConversations() {
         List<ConversationDto> conversations = chatService.getAllConversations();
         return ResponseEntity.ok(ApiResponse.success(conversations));
     }
 
+    @Operation(summary = "특정 채팅 조회", description = "특정 채팅을 조회합니다.")
     @GetMapping("/conversations/{id}/messages")
     public ResponseEntity<ApiResponse<List<ConversationDto>>> getMessages(@PathVariable Long id) {
         List<ConversationDto> messages = chatService.getMessagesByConversationId(id);
         return ResponseEntity.ok(ApiResponse.success(messages));
     }
 
+    @Operation(summary = "특정 채팅 삭제", description = "특정 채팅을 삭제합니다.")
     @DeleteMapping("/conversations/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteConversation(@PathVariable Long id) {
         chatService.deleteConversation(id);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-    @Operation(summary = "채팅 메시지 전송", description = "사용자 메시지를 전송하고 AI 응답을 SSE(Server-Sent Events)로 스트리밍합니다.")
+    @Operation(summary = "스트리밍 메시지 전송", description = "사용자 메시지를 전송하고 AI 응답을 SSE(Server-Sent Events)로 스트리밍합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
+    })
     @PostMapping(value = "/chat/completions/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamChat(
             @Valid @RequestBody ChatRequest request) {

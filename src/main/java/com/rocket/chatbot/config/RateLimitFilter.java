@@ -38,7 +38,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
         String apiKey = request.getHeader("X-API-Key");
-        String identifier = "key:" + hashApiKey(apiKey);
 
         if (!path.startsWith("/api/")) {
             filterChain.doFilter(request, response);
@@ -49,6 +48,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+
+        String identifier = "key:" + hashApiKey(apiKey);
 
         long now = Instant.now().getEpochSecond();
         long windowIndex = now / seconds;
