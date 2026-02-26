@@ -22,9 +22,9 @@
 - Robust Persistence: PostgreSQL 기반 대화 이력 및 컨텍스트 관리 (기본 최근 10개 메시지 유지, 설정으로 조정 가능)
 ---
 ##  실시간 서비스 확인
-*   헬스 체크: [https://chatbot-production-337e.up.railway.app/health](https://chatbot-production-337e.up.railway.app/health)
+*   헬스 체크: [https://chatbot-production-9618.up.railway.app/health](https://chatbot-production-9618.up.railway.app/health)
     * `{"status": "up", ...}` 이면 정상
-*   Swagger: [https://chatbot-production-337e.up.railway.app/swagger-ui/index.html#/](https://chatbot-production-337e.up.railway.app/swagger-ui/index.html#/)
+*   Swagger: [https://chatbot-production-9618.up.railway.app/swagger-ui/index.html#/](https://chatbot-production-9618.up.railway.app/swagger-ui/index.html#/)
 ---
 ## 엔드포인트
 - `POST /api/chat/completions`: 채팅 메시지 전송
