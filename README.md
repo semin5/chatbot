@@ -21,11 +21,6 @@
 - Security: API Key 기반 인증 및 필터 기반 로깅 시스템 (MDC 추적)
 - Robust Persistence: PostgreSQL 기반 대화 이력 및 컨텍스트 관리 (기본 최근 10개 메시지 유지, 설정으로 조정 가능)
 ---
-## 배포 아키텍처
-- Railway: Spring Boot API 서버 배포
-- PostgreSQL: 대화/메시지 영속화
-- Redis: Rate Limiting 및 캐시/임시 데이터
----
 ##  실시간 서비스 확인
 *   헬스 체크: [https://chatbot-production-337e.up.railway.app/health](https://chatbot-production-337e.up.railway.app/health)
     * `{"status": "up", ...}` 이면 정상
