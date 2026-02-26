@@ -31,6 +31,11 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
             return;
         }
 
+        if (path.startsWith("/health")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String apiKey = request.getHeader("X-API-Key");
 
         if (apiKey == null || !validApiKeys.contains(apiKey)) {

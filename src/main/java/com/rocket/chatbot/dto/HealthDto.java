@@ -9,6 +9,6 @@ import java.time.ZoneOffset;
 @Getter
 @NoArgsConstructor
 public class HealthDto {
-    private String status = "Running";
+    private String status = "up";
     private String time = OffsetDateTime.now(ZoneOffset.UTC).toString();
 }
