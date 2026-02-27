@@ -101,7 +101,7 @@ public class ChatService {
     }
 
     @Transactional
-    public SseEmitter createChatCompletionStream(ChatRequest request/*, Long userId*/) {
+    public SseEmitter createChatCompletionStream(ChatRequest request) {
         SseEmitter emitter = new SseEmitter(60000L);
 
         Long userId = 1L;
