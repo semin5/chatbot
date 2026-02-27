@@ -6,7 +6,8 @@
 - Spring Boot 3.2.12, Java 21
 - Spring Security
 - Gradle
-- PostgreSQL, Redis
+- PostgreSQL
+- Redis
 - Spring WebFlux
 - Spring Data JPA
 - Docker
@@ -15,11 +16,10 @@
 ---
 ## 주요 기능
 
-- Intelligent Conversation: OpenAI GPT API 기반의 문맥 인지 대화
-- SSE Streaming: `text/event-stream` 기반 실시간 토큰 전송
-- Rate Limiting: Redis 기반 실시간 트래픽 제어 (DoS 방지 및 비용 최적화)
-- Security: API Key 기반 인증 및 필터 기반 로깅 시스템 (MDC 추적)
-- Robust Persistence: PostgreSQL 기반 대화 이력 및 컨텍스트 관리 (기본 최근 10개 메시지 유지, 설정으로 조정 가능)
+- 실시간 스트리밍: 실시간 스트리밍 응답 지원
+- 이전 답변 불러오기 : 대화 기록을 저장해두고 대화 문맥을 인지 후 답변
+- Rate Limiting: Redis 기반 실시간 트래픽 제어
+- Security: API Key 기반 인증 및 필터 기반 로깅 시스템
 ---
 ##  실시간 서비스 확인
 *   헬스 체크: [https://chatbot-production-9618.up.railway.app/health](https://chatbot-production-9618.up.railway.app/health)
