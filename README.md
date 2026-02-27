@@ -38,7 +38,7 @@
 ## 인증 방식(API Key)
 모든 API 호출 시 헤더에 서비스 등록된 X-API-Key를 포함해야 하며 Swagger에서 테스트할 때도 동일하게 헤더를 넣어야 합니다.
 - X-API-Key: <YOUR_API_KEY>
----
+
 ## 환경 변수
 - OPENAI
 - POSTGRE_URL
